@@ -1,0 +1,79 @@
+{
+  "version": "1",
+  "metadata": {
+    "marimo_version": "0.18.4"
+  },
+  "cells": [
+    {
+      "id": "Hbol",
+      "code_hash": "1903954faf09a68d969bb22ca8ca3c15",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "AetF",
+      "code_hash": "e7c1a09c35ce4b7ec8f6e65998a25f0b",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "wwbs",
+      "code_hash": "7340be6f6fdc13f0bcaad16d2a45a638",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "deam",
+      "code_hash": "eff7d5dba32b4da32d9a67a519434d3f",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/html": "<marimo-ui-element object-id='deam-0' random-id='6563e554-87dc-2aa6-990d-20eee80da4da'><marimo-table data-initial-value='[]' data-label='null' data-data='&quot;[{&#92;&quot;question&#92;&quot;:&#92;&quot;34 * (21 + 16)&#92;&quot;,&#92;&quot;answer&#92;&quot;:1258},{&#92;&quot;question&#92;&quot;:&#92;&quot;82 - 2 * 83&#92;&quot;,&#92;&quot;answer&#92;&quot;:-84},{&#92;&quot;question&#92;&quot;:&#92;&quot;86 + 95 * 44&#92;&quot;,&#92;&quot;answer&#92;&quot;:4266},{&#92;&quot;question&#92;&quot;:&#92;&quot;18 * 78 * 93&#92;&quot;,&#92;&quot;answer&#92;&quot;:130572},{&#92;&quot;question&#92;&quot;:&#92;&quot;94 + 99 + 22&#92;&quot;,&#92;&quot;answer&#92;&quot;:215},{&#92;&quot;question&#92;&quot;:&#92;&quot;67 * 93 + 9&#92;&quot;,&#92;&quot;answer&#92;&quot;:6240},{&#92;&quot;question&#92;&quot;:&#92;&quot;62 - 73 * 24&#92;&quot;,&#92;&quot;answer&#92;&quot;:-1690},{&#92;&quot;question&#92;&quot;:&#92;&quot;22 * 78 * 49&#92;&quot;,&#92;&quot;answer&#92;&quot;:84084},{&#92;&quot;question&#92;&quot;:&#92;&quot;52 + 94 * 15&#92;&quot;,&#92;&quot;answer&#92;&quot;:1462},{&#92;&quot;question&#92;&quot;:&#92;&quot;95 + 56 - 55&#92;&quot;,&#92;&quot;answer&#92;&quot;:96}]&quot;' data-total-rows='10000' data-total-columns='2' data-max-columns='50' data-banner-text='&quot;&quot;' data-pagination='true' data-page-size='10' data-field-types='[[&quot;question&quot;,[&quot;string&quot;,&quot;object&quot;]],[&quot;answer&quot;,[&quot;integer&quot;,&quot;int64&quot;]]]' data-show-filters='true' data-show-download='true' data-show-column-summaries='true' data-show-data-types='true' data-show-page-size-selector='true' data-show-column-explorer='true' data-show-chart-builder='true' data-row-headers='[]' data-has-stable-row-id='false' data-lazy='false' data-preload='false'></marimo-table></marimo-ui-element>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "dHjF",
+      "code_hash": "6281c76de547ab77d92e25eba8ec2626",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "KGgQ",
+      "code_hash": null,
+      "outputs": [],
+      "console": []
+    }
+  ]
+}
