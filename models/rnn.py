@@ -86,7 +86,10 @@ def _():
     import torch
     import torch.nn as nn
     from torch.utils.data import Dataset, DataLoader
-    return DataLoader, Dataset, nn, torch
+
+    device = "mps" if torch.backends.mps.is_available() else "cpu"
+    print(device)
+    return DataLoader, Dataset, device, nn, torch
 
 
 @app.cell
@@ -102,10 +105,10 @@ def _(Dataset, encode_input, encode_output, torch):
     class ArthemeticDataset(Dataset):
         def __init__(self, data):
             self.data = data
-    
+
         def __len__(self):
             return len(self.data)
-    
+
         def __getitem__(self, idx):
             question, answer = self.data[idx]
 
@@ -134,7 +137,6 @@ def _(ArthemeticDataset, char_to_id, decode, df):
 
     print(decode(enc.tolist()))
     print(decode([char_to_id["<SOS>"]] + dec_tgt.tolist()))
-
     return (dataset,)
 
 
@@ -147,7 +149,6 @@ def _(DataLoader, dataset):
         print(dec_input.shape)
         print(dec_target.shape)
         break
-
     return (loader,)
 
 
@@ -187,45 +188,49 @@ def _(char_to_id, nn):
             h = self.encoder(x)
             out = self.decoder(y, h)
             return out
-    
+
     loss_fn = nn.CrossEntropyLoss(ignore_index=char_to_id["<PAD>"])
     return Seq2Seq, loss_fn
 
 
 @app.cell
-def _(EMB_DIM, HIDDEN_DIM, Seq2Seq, VOCAB_SIZE, char_to_id):
+def _(EMB_DIM, HIDDEN_DIM, Seq2Seq, VOCAB_SIZE, char_to_id, device):
     model = Seq2Seq(
         vocab_size=VOCAB_SIZE,
         emb_dim=EMB_DIM,
         hidden_dim=HIDDEN_DIM,
         pad_idx=char_to_id["<PAD>"]
-    )
+    ).to(device)
     return (model,)
 
 
 @app.cell
-def _(loader, model):
-    enc_inp, dec_inp, dec_targ = next(iter(loader))
-    print(enc_inp[2])
-    print(dec_inp[2])
-    print(dec_targ[2])
+def _(device, loader, loss_fn, model, torch):
+    # single pass
+    NUM_EPOCHS = 1
 
-    out = model(enc_inp, dec_inp)
-    print(out.shape)
-    return dec_targ, out
+    optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
 
+    for epoch in range(NUM_EPOCHS):
+        model.train()
 
-@app.cell
-def _(dec_targ, loss_fn, out):
-    B, S, V = out.shape
+        for enc_inp_train, dec_inp_train, dec_targ_train in loader:
+            enc_inp_train = enc_inp_train.to(device)
+            dec_inp_train = dec_inp_train.to(device)
+            dec_targ_train = dec_targ_train.to(device)
 
-    loss = loss_fn(
-        out.view(B * S, V),
-        dec_targ.view(B * S),
-    )
+            logits = model(enc_inp_train, dec_inp_train)
 
-    print(loss.item())
+            B, S, V = logits.shape
 
+            loss = loss_fn(
+                logits.view(B * S, V),
+                dec_targ_train.view(B * S)
+            )
+
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
     return
 
 
