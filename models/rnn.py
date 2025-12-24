@@ -86,7 +86,7 @@ def _():
     import torch
     import torch.nn as nn
     from torch.utils.data import Dataset, DataLoader
-    return DataLoader, Dataset, torch
+    return DataLoader, Dataset, nn, torch
 
 
 @app.cell
@@ -94,7 +94,7 @@ def _(VOCAB):
     VOCAB_SIZE = len(VOCAB)
     EMB_DIM = 32
     HIDDEN_DIM = 64
-    return
+    return EMB_DIM, HIDDEN_DIM, VOCAB_SIZE
 
 
 @app.cell
@@ -147,6 +147,84 @@ def _(DataLoader, dataset):
         print(dec_input.shape)
         print(dec_target.shape)
         break
+
+    return (loader,)
+
+
+@app.cell
+def _(char_to_id, nn):
+    class Encoder(nn.Module):
+        def __init__(self, vocab_size, emb_dim, hidden_dim, pad_idx):
+            super().__init__()
+            self.emb = nn.Embedding(vocab_size, emb_dim, padding_idx=pad_idx)
+            self.rnn = nn.RNN(emb_dim, hidden_dim, batch_first=True)
+
+        def forward(self, x):
+            emb = self.emb(x)
+            _, h = self.rnn(emb)
+            return h
+
+    class Decoder(nn.Module):
+        def __init__(self, vocab_size, emb_dim, hidden_dim, pad_idx):
+            super().__init__()
+            self.emb = nn.Embedding(vocab_size, emb_dim, padding_idx=pad_idx)
+            self.rnn = nn.RNN(emb_dim, hidden_dim, batch_first=True)
+            self.fc = nn.Linear(hidden_dim, vocab_size)
+
+        def forward(self, x, h):
+            emb = self.emb(x)
+            out, _ = self.rnn(emb, h)
+            out = self.fc(out)
+            return out
+
+    class Seq2Seq(nn.Module):
+        def __init__(self, vocab_size, emb_dim, hidden_dim, pad_idx):
+            super().__init__()
+            self.encoder = Encoder(vocab_size, emb_dim, hidden_dim, pad_idx)
+            self.decoder = Decoder(vocab_size, emb_dim, hidden_dim, pad_idx)
+
+        def forward(self, x, y):
+            h = self.encoder(x)
+            out = self.decoder(y, h)
+            return out
+    
+    loss_fn = nn.CrossEntropyLoss(ignore_index=char_to_id["<PAD>"])
+    return Seq2Seq, loss_fn
+
+
+@app.cell
+def _(EMB_DIM, HIDDEN_DIM, Seq2Seq, VOCAB_SIZE, char_to_id):
+    model = Seq2Seq(
+        vocab_size=VOCAB_SIZE,
+        emb_dim=EMB_DIM,
+        hidden_dim=HIDDEN_DIM,
+        pad_idx=char_to_id["<PAD>"]
+    )
+    return (model,)
+
+
+@app.cell
+def _(loader, model):
+    enc_inp, dec_inp, dec_targ = next(iter(loader))
+    print(enc_inp[2])
+    print(dec_inp[2])
+    print(dec_targ[2])
+
+    out = model(enc_inp, dec_inp)
+    print(out.shape)
+    return dec_targ, out
+
+
+@app.cell
+def _(dec_targ, loss_fn, out):
+    B, S, V = out.shape
+
+    loss = loss_fn(
+        out.view(B * S, V),
+        dec_targ.view(B * S),
+    )
+
+    print(loss.item())
 
     return
 
