@@ -126,9 +126,18 @@ def _(Dataset, encode_input, encode_output, torch):
 
 @app.cell
 def _(ArthemeticDataset, char_to_id, decode, df):
-    all_data = list(df.itertuples(index=False, name=None))
+    data_size = df.shape[0]
+    train_size = int(data_size * 0.8)
+    test_size = data_size - train_size
 
-    dataset = ArthemeticDataset(all_data)
+    train_df = df[:train_size]
+    test_df = df[train_size:]
+
+    train_data = list(train_df.itertuples(index=False, name=None))
+    test_data = list(test_df.itertuples(index=False, name=None))
+
+    dataset = ArthemeticDataset(train_data)
+
     enc, dec_in, dec_tgt = dataset[0]
 
     print(enc.shape)
@@ -137,7 +146,7 @@ def _(ArthemeticDataset, char_to_id, decode, df):
 
     print(decode(enc.tolist()))
     print(decode([char_to_id["<SOS>"]] + dec_tgt.tolist()))
-    return (dataset,)
+    return dataset, test_data
 
 
 @app.cell
@@ -176,7 +185,7 @@ def _(char_to_id, nn):
             emb = self.emb(x)
             out, _ = self.rnn(emb, h)
             out = self.fc(out)
-            return out
+            return out, h
 
     class Seq2Seq(nn.Module):
         def __init__(self, vocab_size, emb_dim, hidden_dim, pad_idx):
@@ -186,11 +195,44 @@ def _(char_to_id, nn):
 
         def forward(self, x, y):
             h = self.encoder(x)
-            out = self.decoder(y, h)
+            out, _ = self.decoder(y, h)
             return out
 
     loss_fn = nn.CrossEntropyLoss(ignore_index=char_to_id["<PAD>"])
     return Seq2Seq, loss_fn
+
+
+@app.cell
+def _(char_to_id, decode, encode_input, torch):
+    PAD_ID = char_to_id["<PAD>"]
+    SOS_ID = char_to_id["<SOS>"]
+    EOS_ID = char_to_id["<EOS>"]
+
+    def infer(model, questions, max_len=20, device="mps"):
+        model.eval()
+        batch_size = len(questions)
+
+        enc_ids_infer = [encode_input(q) for q in questions]
+        enc_inp_infer = torch.tensor(enc_ids_infer, dtype=torch.long).to(device)
+
+        with torch.no_grad():
+            h = model.encoder(enc_inp_infer)
+
+    
+        current_tokens = torch.full((batch_size, 1), SOS_ID, dtype=torch.long).to(device)
+        all_preds = torch.zeros((batch_size, max_len), dtype=torch.long).to(device)
+
+        for i in range(max_len):
+            with torch.no_grad():
+                out_logits, h = model.decoder(current_tokens, h)
+        
+            next_tokens = out_logits.argmax(dim=-1)
+            all_preds[:, i] = next_tokens.squeeze(1).cpu()
+            current_tokens = next_tokens
+    
+        return [decode(row.tolist()) for row in all_preds]
+            
+    return (infer,)
 
 
 @app.cell
@@ -231,6 +273,40 @@ def _(device, loader, loss_fn, model, torch):
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
+    return
+
+
+@app.cell
+def _(infer, model, test_data):
+    from sklearn.metrics import accuracy_score
+    y_true = []
+    y_pred = []
+    batch_size = 64
+
+    for items in range(0, len(test_data), batch_size):
+
+        batch = test_data[items : items + batch_size]
+        qs = [item[0] for item in batch]
+        ans = [item[1] for item in batch]
+
+        preds = infer(model, qs)
+
+        y_true.extend(ans)
+        y_pred.extend(preds)
+    
+    return accuracy_score, y_pred, y_true
+
+
+@app.cell
+def _(accuracy_score, y_pred, y_true):
+    accuracy_score(y_true, y_pred)
+    return
+
+
+@app.cell
+def _(accuracy_score, y_pred, y_true):
+    accuracy = accuracy_score(y_true, y_pred)
+    print(f"Accuracy: {accuracy * 100:.2f}%")
     return
 
 
