@@ -20,7 +20,7 @@ def _():
 
 @app.cell
 def _(pd):
-    df = pd.read_csv('../data_generator/bodmas.csv')
+    df = pd.read_csv('../bodmas.csv')
     return (df,)
 
 
@@ -86,10 +86,11 @@ def _():
     import torch
     import torch.nn as nn
     from torch.utils.data import Dataset, DataLoader
+    import wandb
 
     device = "mps" if torch.backends.mps.is_available() else "cpu"
     print(device)
-    return DataLoader, Dataset, device, nn, torch
+    return DataLoader, Dataset, device, nn, torch, wandb
 
 
 @app.cell
@@ -162,30 +163,42 @@ def _(DataLoader, dataset):
 
 
 @app.cell
-def _(char_to_id, nn):
+def _(char_to_id, nn, torch):
     class Encoder(nn.Module):
         def __init__(self, vocab_size, emb_dim, hidden_dim, pad_idx):
             super().__init__()
             self.emb = nn.Embedding(vocab_size, emb_dim, padding_idx=pad_idx)
             self.rnn = nn.RNN(emb_dim, hidden_dim, batch_first=True)
+            self.norm = nn.LayerNorm(hidden_dim)
 
         def forward(self, x):
             emb = self.emb(x)
             _, h = self.rnn(emb)
+            h = self.norm(h.squeeze(0))
             return h
 
     class Decoder(nn.Module):
         def __init__(self, vocab_size, emb_dim, hidden_dim, pad_idx):
             super().__init__()
             self.emb = nn.Embedding(vocab_size, emb_dim, padding_idx=pad_idx)
-            self.rnn = nn.RNN(emb_dim, hidden_dim, batch_first=True)
+            self.cell = nn.RNNCell(emb_dim, hidden_dim)
+            self.norm = nn.LayerNorm(hidden_dim)
             self.fc = nn.Linear(hidden_dim, vocab_size)
 
-        def forward(self, x, h):
+        def forward(self, x, h0):
+            B, S = x.shape
+
             emb = self.emb(x)
-            out, _ = self.rnn(emb, h)
-            out = self.fc(out)
-            return out, h
+            h = h0
+            outputs = []        
+
+            for t in range(S):
+                h = self.cell(emb[:, t], h)
+                h = self.norm(h)
+                logits = self.fc(h)
+                outputs.append(logits)
+
+            return torch.stack(outputs, dim=1), h
 
     class Seq2Seq(nn.Module):
         def __init__(self, vocab_size, emb_dim, hidden_dim, pad_idx):
@@ -218,20 +231,19 @@ def _(char_to_id, decode, encode_input, torch):
         with torch.no_grad():
             h = model.encoder(enc_inp_infer)
 
-    
+
         current_tokens = torch.full((batch_size, 1), SOS_ID, dtype=torch.long).to(device)
         all_preds = torch.zeros((batch_size, max_len), dtype=torch.long).to(device)
 
         for i in range(max_len):
             with torch.no_grad():
                 out_logits, h = model.decoder(current_tokens, h)
-        
+
             next_tokens = out_logits.argmax(dim=-1)
             all_preds[:, i] = next_tokens.squeeze(1).cpu()
             current_tokens = next_tokens
-    
+
         return [decode(row.tolist()) for row in all_preds]
-            
     return (infer,)
 
 
@@ -247,14 +259,37 @@ def _(EMB_DIM, HIDDEN_DIM, Seq2Seq, VOCAB_SIZE, char_to_id, device):
 
 
 @app.cell
-def _(device, loader, loss_fn, model, torch):
+def _(
+    EMB_DIM,
+    HIDDEN_DIM,
+    VOCAB_SIZE,
+    device,
+    loader,
+    loss_fn,
+    model,
+    torch,
+    wandb,
+):
     # single pass
-    NUM_EPOCHS = 1
+    NUM_EPOCHS = 250
 
-    optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
+    optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
+
+    wandb.init(
+        project="training-a-calculator",
+        config={
+            "epochs": NUM_EPOCHS,
+            "batch_size": 32,
+            "learning_rate": 1e-4,
+            "emb_dim": EMB_DIM,
+            "hidden_dim": HIDDEN_DIM,
+            "vocab_size": VOCAB_SIZE,
+        }
+    )
 
     for epoch in range(NUM_EPOCHS):
         model.train()
+        total_loss = 0
 
         for enc_inp_train, dec_inp_train, dec_targ_train in loader:
             enc_inp_train = enc_inp_train.to(device)
@@ -272,7 +307,15 @@ def _(device, loader, loss_fn, model, torch):
 
             optimizer.zero_grad()
             loss.backward()
+            torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
             optimizer.step()
+
+            total_loss += loss.item()
+
+        avg_loss = total_loss / len(loader)
+        wandb.log({"epoch": epoch, "loss": avg_loss})
+
+    wandb.finish()
     return
 
 
@@ -293,13 +336,18 @@ def _(infer, model, test_data):
 
         y_true.extend(ans)
         y_pred.extend(preds)
-    
     return accuracy_score, y_pred, y_true
 
 
 @app.cell
 def _(accuracy_score, y_pred, y_true):
     accuracy_score(y_true, y_pred)
+    return
+
+
+@app.cell
+def _(y_pred):
+    print(y_pred)
     return
 
 

@@ -1,0 +1,37 @@
+{
+  "os": "macOS-26.3-arm64-arm-64bit",
+  "python": "CPython 3.12.11",
+  "startedAt": "2025-12-25T14:27:00.880386Z",
+  "program": "/Users/arjunprakashrao/Drive/projects/minimal-transformers/models/rnn.py",
+  "codePath": "models/rnn.py",
+  "codePathLocal": "rnn.py",
+  "git": {
+    "remote": "https://github.com/arjunprakash027/minimal-transformers.git",
+    "commit": "161ef6f7050b233aedb8966820ac8db4caf865fc"
+  },
+  "email": "arjunprakash027@gmail.com",
+  "root": "/Users/arjunprakashrao/Drive/projects/minimal-transformers/models",
+  "host": "Arjuns-MacBook-Air.local",
+  "executable": "/Users/arjunprakashrao/Drive/projects/minimal-transformers/.venv/bin/python",
+  "cpu_count": 8,
+  "cpu_count_logical": 8,
+  "disk": {
+    "/": {
+      "total": "245075738624",
+      "used": "133247520768"
+    }
+  },
+  "memory": {
+    "total": "8589934592"
+  },
+  "apple": {
+    "name": "Apple M1",
+    "ecpuCores": 4,
+    "pcpuCores": 4,
+    "gpuCores": 7,
+    "memoryGb": 8,
+    "swapTotalBytes": "7516192768",
+    "ramTotalBytes": "8589934592"
+  },
+  "writerId": "emdnnk7gdgj22cc6ac4770yoyw3ik6dk"
+}

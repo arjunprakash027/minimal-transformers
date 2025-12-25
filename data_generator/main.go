@@ -66,7 +66,7 @@ func worker(
 func main() {
 	
 	const (
-		numSamples = 10000
+		numSamples = 1000000
 		numWorkers = 8
 	)
 

@@ -1,0 +1,7 @@
+{"time":"2025-12-25T14:27:00.927045Z","level":"INFO","msg":"stream: starting","core version":"0.23.1"}
+{"time":"2025-12-25T14:27:01.341043Z","level":"INFO","msg":"stream: created new stream","id":"zwc9ott0"}
+{"time":"2025-12-25T14:27:01.341641Z","level":"INFO","msg":"handler: started","stream_id":"zwc9ott0"}
+{"time":"2025-12-25T14:27:01.343367Z","level":"INFO","msg":"writer: started","stream_id":"zwc9ott0"}
+{"time":"2025-12-25T14:27:01.343445Z","level":"INFO","msg":"stream: started","id":"zwc9ott0"}
+{"time":"2025-12-25T14:27:01.344601Z","level":"INFO","msg":"sender: started","stream_id":"zwc9ott0"}
+{"time":"2025-12-25T14:31:27.041426Z","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/files/arjunprakash027-university-college-dublin/training-a-calculator/zwc9ott0/file_stream\": dial tcp 35.186.228.49:443: connect: operation timed out"}

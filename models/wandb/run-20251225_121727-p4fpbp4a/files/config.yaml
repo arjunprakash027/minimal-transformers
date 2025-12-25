@@ -1,0 +1,65 @@
+_wandb:
+    value:
+        cli_version: 0.23.1
+        e:
+            qurkjt2ygg1stcuxfs2w9k2tyxnh56pe:
+                apple:
+                    ecpuCores: 4
+                    gpuCores: 7
+                    memoryGb: 8
+                    name: Apple M1
+                    pcpuCores: 4
+                    ramTotalBytes: "8589934592"
+                    swapTotalBytes: "5368709120"
+                codePath: models/rnn.py
+                codePathLocal: rnn.py
+                cpu_count: 8
+                cpu_count_logical: 8
+                disk:
+                    /:
+                        total: "245075738624"
+                        used: "131068502016"
+                email: arjunprakash027@gmail.com
+                executable: /Users/arjunprakashrao/Drive/projects/minimal-transformers/.venv/bin/python
+                git:
+                    commit: 161ef6f7050b233aedb8966820ac8db4caf865fc
+                    remote: https://github.com/arjunprakash027/minimal-transformers.git
+                host: Arjuns-MacBook-Air.local
+                memory:
+                    total: "8589934592"
+                os: macOS-26.3-arm64-arm-64bit
+                program: /Users/arjunprakashrao/Drive/projects/minimal-transformers/models/rnn.py
+                python: CPython 3.12.11
+                root: /Users/arjunprakashrao/Drive/projects/minimal-transformers/models
+                startedAt: "2025-12-25T12:17:27.175105Z"
+                writerId: qurkjt2ygg1stcuxfs2w9k2tyxnh56pe
+        m: []
+        python_version: 3.12.11
+        t:
+            "1":
+                - 1
+                - 5
+                - 53
+            "2":
+                - 1
+                - 5
+                - 53
+            "3":
+                - 2
+                - 16
+            "4": 3.12.11
+            "5": 0.23.1
+            "12": 0.23.1
+            "13": darwin-arm64
+batch_size:
+    value: 32
+emb_dim:
+    value: 32
+epochs:
+    value: 250
+hidden_dim:
+    value: 64
+learning_rate:
+    value: 0.0001
+vocab_size:
+    value: 19
